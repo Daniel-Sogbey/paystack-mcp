@@ -42,5 +42,16 @@ func (c *Client) InitializePayment(req InitializePaymentRequest) (*InitializePay
 }
 
 func (c *Client) VerifyPayment(req VerifyPaymentRequest) (*VerifyPaymentResponse, error) {
-	return nil, nil
+	url := fmt.Sprintf("%s/transaction/verify/%s", c.BaseUrl, req.Reference)
+
+	header := http.Header{}
+	header.Set("Content-Type", "application/json")
+	header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
+
+	resp, err := requester.Requester[VerifyPaymentResponse](http.MethodGet, url, header, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

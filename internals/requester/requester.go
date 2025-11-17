@@ -3,6 +3,7 @@ package requester
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"maps"
 	"net/http"
 	"net/url"
@@ -14,6 +15,8 @@ func Requester[T any](method, baseUrl string, header http.Header, queryParams ur
 	if err != nil {
 		return nil, err
 	}
+
+	log.Println("Info Requester: URL", fullUrl.String())
 
 	if method == http.MethodGet {
 		q := fullUrl.Query()
@@ -44,6 +47,7 @@ func Requester[T any](method, baseUrl string, header http.Header, queryParams ur
 	var t T
 	err = json.NewDecoder(resp.Body).Decode(&t)
 	if err != nil {
+		log.Println("Error Requester:", err)
 		return nil, err
 	}
 
