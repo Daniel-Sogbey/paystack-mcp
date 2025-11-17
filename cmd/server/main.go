@@ -24,9 +24,8 @@ func main() {
 	var cfg config
 
 	flag.StringVar(&cfg.port, "port", os.Getenv("PORT"), "mcp-server-port")
-	flag.StringVar(&cfg.baseUrl, "baseUrl", os.Getenv("BASE_URL"), "paystack api base url")
+	flag.StringVar(&cfg.baseUrl, "baseUrl", os.Getenv("PAYSTACK_BASE_URL"), "paystack api base url")
 	flag.StringVar(&cfg.apiKey, "apiKey", os.Getenv("PAYSTACK_API_KEY"), "paystack api key")
-
 	flag.Parse()
 
 	paystackClient := paystack.New(cfg.apiKey, cfg.baseUrl)
@@ -35,6 +34,9 @@ func main() {
 		Client: paystackClient,
 	}
 
+	if cfg.port == "" {
+		cfg.port = "8080"
+	}
 	srv := http.Server{
 		Addr:    fmt.Sprintf(":%s", cfg.port),
 		Handler: app.routes(),
