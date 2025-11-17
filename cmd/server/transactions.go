@@ -8,6 +8,7 @@ import (
 
 	"github.com/Daniel-Sogbey/paystack-mcp-server/internals/paystack"
 	"github.com/Daniel-Sogbey/paystack-mcp-server/internals/types"
+	"github.com/julienschmidt/httprouter"
 )
 
 func (app *application) manifestHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,12 +40,14 @@ func (app *application) initializePaymentHandler(w http.ResponseWriter, r *http.
 	var req paystack.InitializePaymentRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
+		log.Println("Error Log1:", err)
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
 
 	resp, err := app.Client.InitializePayment(req)
 	if err != nil {
+		log.Println("Error Log2:", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -59,5 +62,25 @@ func (app *application) initializePaymentHandler(w http.ResponseWriter, r *http.
 }
 
 func (app *application) verifyPayment(w http.ResponseWriter, r *http.Request) {
+	reference := httprouter.ParamsFromContext(r.Context()).ByName("reference")
+	if reference == "" {
+		log.Println("Error Log1:")
+		http.Error(w, "bad request: provider a payment reference", http.StatusBadRequest)
+		return
+	}
 
+	response, err := app.Client.VerifyPayment(paystack.VerifyPaymentRequest{Reference: reference})
+	if err != nil {
+		log.Println("Error Log2:", err)
+		http.Error(w, "internal server error 1", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "internal server error 2", http.StatusInternalServerError)
+	}
 }
